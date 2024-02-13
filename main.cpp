@@ -49,7 +49,7 @@
 26 :          I2C0 SDA/        /GP20    -> Relay
 27 :          I2C0 SCL/        /GP21    ->
 28 :                             GND
-29 :                            GP22
+29 :                            GP22    -> CTRL Pin of 15V DC/DC converter
 30 :                             RUN
 31 :          I2C1 SDA/ADC0    /GP26    <- DC/DC Voltage
 32 :          I2C1 SCL/ADC1    /GP27
@@ -81,6 +81,7 @@ static constexpr uint8_t PIN_USER_1            = 17;
 static constexpr uint8_t PIN_TMC5160_ENABLE    = 18;
 static constexpr uint8_t PIN_FET_PWM           = 19;
 static constexpr uint8_t PIN_RELAY             = 20;
+static constexpr uint8_t PIN_DCDC_CTRL         = 22;
 static constexpr uint8_t PIN_ADC0_15V          = 26;
 
 static constexpr uint32_t CAN_ID_ENTER_AUTO    = 0x1000;
@@ -96,6 +97,7 @@ int main()
 
   cilo72::hw::BlinkForever    blink(PICO_DEFAULT_LED_PIN, 1);
   cilo72::hw::Gpio            pinRelay(PIN_RELAY, cilo72::hw::Gpio::Direction::Output, cilo72::hw::Gpio::Level::Low);
+  cilo72::hw::Gpio            pinDcDcCtrl(PIN_DCDC_CTRL, cilo72::hw::Gpio::Direction::Output, cilo72::hw::Gpio::Level::Low);
   cilo72::hw::Pwm             pinPwm(PIN_FET_PWM);
   cilo72::hw::SPIBus          spiBus1(PIN_SPI1_SCK, PIN_SPI1_RX, PIN_SPI1_TX);
   cilo72::hw::SPIDevice       spiTMC5160(spiBus1, PIN_SPI1_TMC5160_CS);
@@ -122,6 +124,7 @@ int main()
 
   stateAuto.setOnEnter([&]()
   {
+    pinDcDcCtrl.set();
     trafo.off();
     controlKnob.off();
     display.draw(cilo72::graphic::Color::blue, trafo.power()); 
@@ -158,6 +161,7 @@ int main()
 
   stateShort.setOnEnter([&]()
   {
+    pinDcDcCtrl.clear();
     trafo.off();
     controlKnob.off();
     display.drawShort(); 
@@ -177,6 +181,7 @@ int main()
 
   stateManuel.setOnEnter([&]()
   {
+    pinDcDcCtrl.set();
     trafo.off();
     controlKnob.off();
     display.draw(cilo72::graphic::Color::black, controlKnob.position());
