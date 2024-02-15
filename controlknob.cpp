@@ -47,6 +47,7 @@ static bool inRange(int32_t value, int32_t min, int32_t max)
     inZeroNotch_ = lastInZeroNotch_ = true;
     state_ = lastState_ = State::ZeroNotch;
     position_ = 0;
+    changed_ = true;
   }
 
   void ControlKnob::run()

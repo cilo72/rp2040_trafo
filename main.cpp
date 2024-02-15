@@ -119,6 +119,12 @@ int main()
   cilo72::core::State         stateAuto;
   cilo72::core::State         stateShort;
   cilo72::hw::ElapsedTimer_ms timer;
+
+  static const cilo72::graphic::Color COLOR_MANUAL_BG = cilo72::graphic::Color(153, 255, 51);
+  static const cilo72::graphic::Color COLOR_MANUAL_FG = cilo72::graphic::Color::black;
+  
+  static const cilo72::graphic::Color COLOR_AUTO_BG   = cilo72::graphic::Color::blue;
+  static const cilo72::graphic::Color COLOR_AUTO_FG   = cilo72::graphic::Color::white;
   
   can.reset();
 
@@ -127,7 +133,7 @@ int main()
     pinDcDcCtrl.set();
     trafo.off();
     controlKnob.off();
-    display.draw(cilo72::graphic::Color::blue, trafo.power()); 
+    display.draw(COLOR_AUTO_BG, COLOR_AUTO_FG, trafo.power()); 
   });
 
   stateAuto.setOnRun([&](cilo72::core::State &state) -> const cilo72::core::StateMachineCommand *
@@ -152,7 +158,7 @@ int main()
         }
 
         trafo.setPower(p);
-        display.draw(cilo72::graphic::Color::blue, trafo.power());
+        display.draw(COLOR_AUTO_BG, COLOR_AUTO_FG, trafo.power());
       }
     }
 
@@ -184,7 +190,7 @@ int main()
     pinDcDcCtrl.set();
     trafo.off();
     controlKnob.off();
-    display.draw(cilo72::graphic::Color::black, controlKnob.position());
+    display.draw(COLOR_MANUAL_BG, COLOR_MANUAL_FG, controlKnob.position());
   });
 
   stateManuel.setOnRun([&](cilo72::core::State &state) -> const cilo72::core::StateMachineCommand *
@@ -198,7 +204,7 @@ int main()
     if(controlKnob.hasChanged())
     {
       trafo.setPower(controlKnob.position());
-      display.draw(cilo72::graphic::Color::black, controlKnob.position());
+      display.draw(COLOR_MANUAL_BG, COLOR_MANUAL_FG, controlKnob.position());
     }
 
     if(errorCan == cilo72::ic::MCP2515::Error::OK)
@@ -220,7 +226,7 @@ int main()
 
     sm.run();
 
-    if (adc0.read() < SHORT_VOLTAGE_MV)
+    if (adc0.read() < SHORT_VOLTAGE_MV and pinDcDcCtrl.isHigh() == true)
     {
       if(timer.isValid() == false)
       {
